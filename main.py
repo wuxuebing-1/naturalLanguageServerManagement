@@ -1,16 +1,45 @@
-# 这是一个示例 Python 脚本。
+# main.py
 
-# 按 Shift+F10 执行或将其替换为您的代码。
-# 按 双击 Shift 在所有地方搜索类、文件、工具窗口、操作和设置。
+import openai
+import paramiko
+import config
+
+# 设置 OpenAI API 密钥
+openai.api_key = config.OPENAI_API_KEY
 
 
-def print_hi(name):
-    # 在下面的代码行中使用断点来调试脚本。
-    print(f'Hi, {name}')  # 按 Ctrl+F8 切换断点。
+def get_command_from_gpt(prompt):
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        max_tokens=50
+    )
+    return response.choices[0].text.strip()
 
 
-# 按装订区域中的绿色按钮以运行脚本。
-if __name__ == '__main__':
-    print_hi('PyCharm')
+def execute_command_on_server(command):
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(config.SERVER_IP, username=config.SERVER_USERNAME, password=config.SERVER_PASSWORD)
 
-# 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助
+    stdin, stdout, stderr = ssh.exec_command(command)
+    output = stdout.read().decode()
+    ssh.close()
+    return output
+
+
+def main():
+    while True:
+        user_input = input("请输入要执行的服务器命令（输入'退出'结束程序）：")
+        if user_input.lower() == '退出':
+            break
+
+        command = get_command_from_gpt(user_input)
+        print(f"GPT 解析的命令: {command}")
+
+        result = execute_command_on_server(command)
+        print(f"服务器返回的结果: {result}")
+
+
+if __name__ == "__main__":
+    main()
