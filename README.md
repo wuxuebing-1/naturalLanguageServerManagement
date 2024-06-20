@@ -14,7 +14,7 @@
 
 1. 克隆仓库：
    ```bash
-   git clone https://github.com/wuxuebing-1/natural-language-server-management.git
+   git clone https://github.com/wuxuebing-1/naturalLanguageServerManagement.git
    cd natural-language-server-management
    ```
 
